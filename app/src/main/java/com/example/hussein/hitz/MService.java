@@ -23,61 +23,86 @@ public class MService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener{
 
+    //media player
     private MediaPlayer player;
+    //song list
     private ArrayList<Song> songs;
+    //current position
     private int songPosn;
+    //binder
     private final IBinder musicBind = new MusicBinder();
+    //title of current song
     private String songTitle="";
+    //notification id
     private static final int NOTIFY_ID=1;
+    //shuffle flag and random
     private boolean shuffle=false;
     private Random rand;
 
     public void onCreate(){
+        //create the service
         super.onCreate();
+        //initialize position
         songPosn=0;
+        //random
         rand=new Random();
+        //create player
         player = new MediaPlayer();
+        //initialize
         initMusicPlayer();
     }
 
     public void initMusicPlayer(){
+        //set player properties
         player.setWakeMode(getApplicationContext(),
                 PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        //set listeners
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
     }
 
+    //pass song list
     public void setList(ArrayList<Song> theSongs){
         songs=theSongs;
     }
 
+    //binder
     public class MusicBinder extends Binder {
         MService getService() {
             return MService.this;
         }
     }
 
+    //activity will bind to service
     @Override
     public IBinder onBind(Intent intent) {
         return musicBind;
     }
 
+    //release resources when unbind
     @Override
     public boolean onUnbind(Intent intent){
 
         return false;
     }
 
+    //play a song
     public void playSong(){
+        //play
         player.reset();
+        //get song
         Song playSong = songs.get(songPosn);
+        //get title
         songTitle=playSong.getTitle();
+        //get id
         long currSong = playSong.getID();
+        //set uri
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
+        //set the data source
         try{
             player.setDataSource(getApplicationContext(), trackUri);
         }
@@ -87,12 +112,14 @@ public class MService extends Service implements
         player.prepareAsync();
     }
 
+    //set the song
     public void setSong(int songIndex){
         songPosn=songIndex;
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        //check if playback has reached the end of a track
         if(player.getCurrentPosition()>0){
             mp.reset();
             playNext();
@@ -108,7 +135,9 @@ public class MService extends Service implements
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+        //start playback
         mp.start();
+        //notification
         Intent notIntent = new Intent(this, MainActivity.class);
         notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendInt = PendingIntent.getActivity(this, 0,
@@ -126,6 +155,7 @@ public class MService extends Service implements
         startForeground(NOTIFY_ID, not);
     }
 
+    //playback methods
     public int getPosn(){
         return player.getCurrentPosition();
     }
@@ -150,12 +180,14 @@ public class MService extends Service implements
         player.start();
     }
 
+    //skip to previous track
     public void playPrev(){
         songPosn--;
         if(songPosn<0) songPosn=songs.size()-1;
         playSong();
     }
 
+    //skip to next
     public void playNext(){
         if(shuffle){
             int newSong = songPosn;
@@ -179,6 +211,7 @@ public class MService extends Service implements
         stopForeground(true);
     }
 
+    //toggle shuffle
     public void setShuffle(){
         if(shuffle) shuffle=false;
         else shuffle=true;

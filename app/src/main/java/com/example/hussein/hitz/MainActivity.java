@@ -23,15 +23,24 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
 
+
+
 public class MainActivity extends Activity implements MediaPlayerControl {
 
-
+    //song list variables
     private ArrayList<Song> songList;
     private ListView songView;
+
+    //service
     private MService musicSrv;
     private Intent playIntent;
+    //binding
     private boolean musicBound=false;
+
+    //controller
     private MController controller;
+
+    //activity and playback pause flags
     private boolean paused=false, playbackPaused=false;
 
     @Override
@@ -47,29 +56,37 @@ public class MainActivity extends Activity implements MediaPlayerControl {
             }
         }
 
+
+
+        //retrieve list view
         songView = (ListView)findViewById(R.id.song_list);
+        //instantiate list
         songList = new ArrayList<Song>();
-
+        //get songs from device
         getSongList();
-
+        //sort alphabetically by title
         Collections.sort(songList, new Comparator<Song>(){
             public int compare(Song a, Song b){
                 return a.getTitle().compareTo(b.getTitle());
             }
         });
-
+        //create and set adapter
         SAdapter songAdt = new SAdapter(this, songList);
         songView.setAdapter(songAdt);
 
+        //setup controller
         setController();
     }
 
+    //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection(){
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicBinder binder = (MusicBinder)service;
+            //get service
             musicSrv = binder.getService();
+            //pass list
             musicSrv.setList(songList);
             musicBound = true;
         }
@@ -80,6 +97,7 @@ public class MainActivity extends Activity implements MediaPlayerControl {
         }
     };
 
+    //start and bind the service when the activity starts
     @Override
     protected void onStart() {
         super.onStart();
@@ -90,6 +108,7 @@ public class MainActivity extends Activity implements MediaPlayerControl {
         }
     }
 
+    //user song select
     public void songPicked(View view){
         musicSrv.setSong(Integer.parseInt(view.getTag().toString()));
         musicSrv.playSong();
@@ -102,12 +121,14 @@ public class MainActivity extends Activity implements MediaPlayerControl {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        //menu item selected
         switch (item.getItemId()) {
             case R.id.action_shuffle:
                 musicSrv.setShuffle();
@@ -121,17 +142,22 @@ public class MainActivity extends Activity implements MediaPlayerControl {
         return super.onOptionsItemSelected(item);
     }
 
+    //method to retrieve song info from device
     public void getSongList(){
+        //query external audio
         ContentResolver musicResolver = getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+        //iterate over results if valid
         if(musicCursor!=null && musicCursor.moveToFirst()){
+            //get columns
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
             int idColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+            //add songs to list
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
@@ -204,8 +230,10 @@ public class MainActivity extends Activity implements MediaPlayerControl {
         musicSrv.go();
     }
 
+    //set the controller up
     private void setController(){
         controller = new MController(this);
+        //set previous and next button listeners
         controller.setPrevNextListeners(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -217,6 +245,7 @@ public class MainActivity extends Activity implements MediaPlayerControl {
                 playPrev();
             }
         });
+        //set and show
         controller.setMediaPlayer(this);
         controller.setAnchorView(findViewById(R.id.song_list));
         controller.setEnabled(true);
