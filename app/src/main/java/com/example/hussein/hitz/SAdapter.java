@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 public class SAdapter extends BaseAdapter {
 
+
     //song list and layout
     private ArrayList<Song> songs;
     private LayoutInflater songInf;

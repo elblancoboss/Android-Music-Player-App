@@ -23,23 +23,18 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.MediaController.MediaPlayerControl;
 
-
-
 public class MainActivity extends Activity implements MediaPlayerControl {
 
     //song list variables
     private ArrayList<Song> songList;
     private ListView songView;
-
     //service
     private MService musicSrv;
     private Intent playIntent;
     //binding
     private boolean musicBound=false;
-
     //controller
     private MController controller;
-
     //activity and playback pause flags
     private boolean paused=false, playbackPaused=false;
 
@@ -56,8 +51,6 @@ public class MainActivity extends Activity implements MediaPlayerControl {
             }
         }
 
-
-
         //retrieve list view
         songView = (ListView)findViewById(R.id.song_list);
         //instantiate list
@@ -73,7 +66,6 @@ public class MainActivity extends Activity implements MediaPlayerControl {
         //create and set adapter
         SAdapter songAdt = new SAdapter(this, songList);
         songView.setAdapter(songAdt);
-
         //setup controller
         setController();
     }

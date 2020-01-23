@@ -1,16 +1,15 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<item
 		android:id="@+id/action_shuffle"
-		android:icon="@drawable/shuffle"
 		android:orderInCategory="1"
-		android:showAsAction="always"
+		app:showAsAction="ifRoom"
 		android:title="Shuffle"/>
 	<item
 		android:id="@+id/action_end"
-		android:icon="@drawable/close"
 		android:orderInCategory="2"
-		android:showAsAction="always"
-		android:title="End"/>
+		app:showAsAction="always"
+		android:title="Exit"/>
 
 </menu>
